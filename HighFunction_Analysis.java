@@ -4,7 +4,7 @@
 //@keybinding
 //@menupath
 //@toolbar
-//EXAMPLE: analyzeHeadless ~/github/thesis/samples thesis.gpr -process fib -postScript HighFunction_Analysis.java -scriptlog ~/Desktop/GhidraProjects/script.log
+//EXAMPLE: analyzeHeadless *path to project file* *project file* -process *file* -postScript HighFunction_Analysis.java
 
 import java.io.File;
 import java.io.FileNotFoundException;
