@@ -3,7 +3,7 @@
 //@keybinding
 //@menupath
 //@toolbar
-//EXAMPLE: analyzeHeadless ~/github/thesis/samples thesis.gpr -process fib -postScript HighFunction_Analysis.java -scriptlog ~/Desktop/GhidraProjects/script.log
+//EXAMPLE: analyzeHeadless ~/github/thesis/samples thesis.gpr -process fib -postScript Pcode2LLVM.java -scriptlog ~/Desktop/GhidraProjects/script.log
 
 
 import javax.xml.parsers.DocumentBuilder;
@@ -34,6 +34,8 @@ import ghidra.program.model.pcode.PcodeOp;
 import ghidra.program.model.pcode.Varnode;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class Pcode2LLVM extends HeadlessScript {
@@ -58,6 +60,10 @@ public class Pcode2LLVM extends HeadlessScript {
         Listing listing = currentProgram.getListing();
         FunctionIterator fi = listing.getFunctions(true);
         Function func = null;
+
+        Element globals = doc.createElement("globals");
+        rootElement.appendChild(globals);
+        List globalList = new ArrayList();
 
         while (fi.hasNext()) {
             func = fi.next();
@@ -94,38 +100,83 @@ public class Pcode2LLVM extends HeadlessScript {
             Address entry = func.getEntryPoint();
             InstructionIterator ii = listing.getInstructions(entry, true);
             int y = 0;
+            Element instructions = doc.createElement("instructions");
+            functionElement.appendChild(instructions);
             while (ii.hasNext()) {
                 Instruction inst = ii.next();
                 PcodeOp[] pcode = inst.getPcode();
                 Element instructionElement = doc.createElement("instruction_" + y);
-                functionElement.appendChild(instructionElement);
+                instructions.appendChild(instructionElement);
                 for (int i = 0; i < pcode.length; i++) {
                     Element pcodeElement = doc.createElement("pcode_" + i);
                     instructionElement.appendChild(pcodeElement);
                     Varnode vnodeOutput = pcode[i].getOutput();
                     if (vnodeOutput != null) {
-                        Element iOutputElement = doc.createElement("output");
-                        pcodeElement.appendChild(iOutputElement);
-                        iOutputElement.appendChild(doc.createTextNode(vnodeOutput.toString(language)));
+                        Element pOutputElement = doc.createElement("output");
+                        pcodeElement.appendChild(pOutputElement);
+                        pOutputElement.appendChild(doc.createTextNode(vnodeOutput.toString(language)));
                         Attr size = doc.createAttribute("size");
                         size.setValue(String.valueOf(vnodeOutput.getSize()));
-                        iOutputElement.setAttributeNode(size);
+                        pOutputElement.setAttributeNode(size);
+                        Attr outIsRegister = doc.createAttribute("storage");
+                        String storage = "";
+                        if (vnodeOutput.isRegister()) {
+                            storage = "register";
+                            if (!globalList.contains(storage)) {
+                                globalList.add(storage);
+                            }
+                        } else if (vnodeOutput.isConstant()){
+                            storage = "constant";
+                        } else if (vnodeOutput.isAddress()) {
+                            storage = "memory";
+                        } else if (vnodeOutput.isUnique()) {
+                            storage = "unique";
+                        } else {
+                            storage = "other";
+                        }
+                        outIsRegister.setValue(storage);
+                        pOutputElement.setAttributeNode(outIsRegister);
 
                     }
                     Element iNameElement = doc.createElement("name");
                     pcodeElement.appendChild(iNameElement);
                     iNameElement.appendChild(doc.createTextNode(pcode[i].getMnemonic()));
+                    Attr inIsRegister;
                     for (int j = 0; j < pcode[i].getNumInputs(); j++) {
-                        Element iInputElement = doc.createElement("input_" + j);
-                        pcodeElement.appendChild(iInputElement);
-                        iInputElement.appendChild(doc.createTextNode(pcode[i].getInput(j).toString(language)));
+                        Element pInputElement = doc.createElement("input_" + j);
+                        pcodeElement.appendChild(pInputElement);
+                        pInputElement.appendChild(doc.createTextNode(pcode[i].getInput(j).toString(language)));
                         Attr size = doc.createAttribute("size");
                         size.setValue(String.valueOf(pcode[i].getInput(j).getSize()));
-                        iInputElement.setAttributeNode(size);
+                        pInputElement.setAttributeNode(size);
+                        inIsRegister = doc.createAttribute("storage");
+                        String storage = "";
+                        if (pcode[i].getInput(j).isRegister()) {
+                            storage = "register";
+                            if (!globalList.contains(storage)) {
+                                globalList.add(storage);
+                            }
+                        } else if (pcode[i].getInput(j).isConstant()){
+                            storage = "constant";
+                        } else if (pcode[i].getInput(j).isAddress()) {
+                            storage = "memory";
+                        } else if (pcode[i].getInput(j).isUnique()) {
+                            storage = "unique";
+                        } else {
+                            storage = "other";
+                        }
+                        inIsRegister.setValue(storage);
+                        pInputElement.setAttributeNode(inIsRegister);
                     }
                 }
                 y++;
             }
+        }
+        int x = 0;
+        while (x < globalList.size()){
+            Element global = doc.createElement(globalList.get(x).toString());
+            globals.appendChild(global);
+            x++;
         }
         // write the content into xml file
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
