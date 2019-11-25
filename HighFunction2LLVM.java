@@ -27,6 +27,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class HighFunction2LLVM extends HeadlessScript {
@@ -50,6 +51,11 @@ public class HighFunction2LLVM extends HeadlessScript {
         Listing listing = currentProgram.getListing();
         FunctionIterator fi = listing.getFunctions(true);
 
+        Element globals = doc.createElement("globals");
+        rootElement.appendChild(globals);
+        List globalList = new ArrayList();
+        List globalSizes = new ArrayList();
+
         while (fi.hasNext()) {
 
             Function func = fi.next();
@@ -70,11 +76,11 @@ public class HighFunction2LLVM extends HeadlessScript {
                 Attr fOutputSizeAttr = doc.createAttribute("outputTypeLength");
                 fOutputSizeAttr.setValue("" + funcpro.getReturnType().getLength());
                 functionElement.setAttributeNode(fOutputSizeAttr);
-
             }
             Attr fInputAttr;
             Attr fInputSizeAttr;
             Attr fInputStorageAttr;
+            Attr inIsRegister;
             for(int r = 0; r < funcpro.getNumParams(); r++){
                 fInputAttr = doc.createAttribute("inputType_" + r);
                 fInputAttr.setValue(funcpro.getParam(r).getDataType().getName());
@@ -85,6 +91,19 @@ public class HighFunction2LLVM extends HeadlessScript {
                 fInputStorageAttr = doc.createAttribute("inputStorage_" + r);
                 fInputStorageAttr.setValue("" + funcpro.getParam(r).getStorage());
                 functionElement.setAttributeNode(fInputStorageAttr);
+                inIsRegister = doc.createAttribute("inStorageType_" + r);
+                String storage = "";
+                VariableStorage varStorage = funcpro.getParam(r).getStorage();
+                if (varStorage.isRegisterStorage()) {
+                    storage = "register";
+                } else if (varStorage.isConstantStorage()){
+                    storage = "constant";
+                } else if (varStorage.isMemoryStorage()) {
+                    storage = "memory";
+                } else {
+                    storage = "other";
+                }
+                functionElement.setAttributeNode(inIsRegister);
             }
 
 
@@ -130,6 +149,26 @@ public class HighFunction2LLVM extends HeadlessScript {
                         Attr size = doc.createAttribute("size");
                         size.setValue(String.valueOf(vnodeOutput.getSize()));
                         pOutputElement.setAttributeNode(size);
+                        Attr outIsRegister = doc.createAttribute("storage");
+                        String storage = "";
+                        if (vnodeOutput.isRegister()) {
+                            storage = "register";
+                            String val = vnodeOutput.toString(language);
+                            if (!globalList.contains(val)) {
+                                globalList.add(val);
+                                globalSizes.add("" + vnodeOutput.getSize());
+                            }
+                        } else if (vnodeOutput.isConstant()){
+                            storage = "constant";
+                        } else if (vnodeOutput.isAddress()) {
+                            storage = "memory";
+                        } else if (vnodeOutput.isUnique()) {
+                            storage = "unique";
+                        } else {
+                            storage = "other";
+                        }
+                        outIsRegister.setValue(storage);
+                        pOutputElement.setAttributeNode(outIsRegister);
                     }
                     for (int k = 0; k < pcode.getNumInputs(); k++) {
                         Element pInputElement = doc.createElement("input_" + k);
@@ -138,11 +177,46 @@ public class HighFunction2LLVM extends HeadlessScript {
                         Attr size = doc.createAttribute("size");
                         size.setValue(String.valueOf(pcode.getInput(k).getSize()));
                         pInputElement.setAttributeNode(size);
+                        inIsRegister = doc.createAttribute("storage");
+                        String storage = "";
+                        if (pcode.getInput(k).isRegister()) {
+                            storage = "register";
+                            String val = pcode.getInput(k).toString(language);
+                            if (!globalList.contains(val)) {
+                                globalList.add(val);
+                                globalSizes.add("" + pcode.getInput(k).getSize());
+                            }
+                        } else if (pcode.getInput(k).isConstant()){
+                            storage = "constant";
+                        } else if (pcode.getInput(k).isAddress()) {
+                            storage = "memory";
+                        } else if (pcode.getInput(k).isUnique()) {
+                            storage = "unique";
+                        } else {
+                            storage = "other";
+                        }
+                        inIsRegister.setValue(storage);
+                        pInputElement.setAttributeNode(inIsRegister);
                     }
                 }
 
             }
         }
+
+        int x = 0;
+        while (x < globalList.size()){
+            Element global = doc.createElement("register");
+            globals.appendChild(global);
+            Attr gName = doc.createAttribute("name");
+            gName.setValue(String.valueOf(globalList.get(x).toString()));
+            global.setAttributeNode(gName);
+            Attr gSize = doc.createAttribute("size");
+            gSize.setValue(String.valueOf(globalSizes.get(x)));
+            global.setAttributeNode(gSize);
+
+            x++;
+        }
+
         // write the content into xml file
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
