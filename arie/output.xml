@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<program>
+	<globals>
+		<register name="CF" size="1"/>
+		<register name="RSP" size="8"/>
+		<register name="OF" size="1"/>
+		<register name="SF" size="1"/>
+		<register name="ZF" size="1"/>
+		<register name="RAX" size="8"/>
+		<register name="RIP" size="8"/>
+		<register name="EBP" size="4"/>
+		<register name="RBP" size="8"/>
+		<register name="R9" size="8"/>
+		<register name="RDX" size="8"/>
+		<register name="RSI" size="8"/>
+		<register name="R8" size="8"/>
+		<register name="RCX" size="8"/>
+		<register name="RDI" size="8"/>
+		<register name="EAX" size="4"/>
+		<register name="R15" size="8"/>
+		<register name="R14" size="8"/>
+		<register name="R13" size="8"/>
+		<register name="R12" size="8"/>
+		<register name="RBX" size="8"/>
+		<register name="R13D" size="4"/>
+		<register name="EDI" size="4"/>
+		<register name="EBX" size="4"/>
+	</globals>
+	<function name="main">
+		<output type="undefined"/>
+		<instructions>
+			<instruction_0>
+				<pcode_0>
+					<output size="8" storage="unique">u_660:8</output>
+					<name>INT_MULT</name>
+					<input_0 size="8" storage="register">RDI</input_0>
+					<input_1 size="8" storage="constant">0x1</input_1>
+				</pcode_0>
+				<pcode_1>
+					<output size="8" storage="unique">u_680:8</output>
+					<name>INT_ADD</name>
+					<input_0 size="8" storage="register">RDI</input_0>
+					<input_1 size="8" storage="unique">u_660:8</input_1>
+				</pcode_1>
+				<pcode_2>
+					<output size="4" storage="register">EAX</output>
+					<name>SUBPIECE</name>
+					<input_0 size="8" storage="unique">u_680:8</input_0>
+					<input_1 size="4" storage="constant">0x0</input_1>
+				</pcode_2>
+				<pcode_3>
+					<output size="8" storage="register">RAX</output>
+					<name>INT_ZEXT</name>
+					<input_0 size="4" storage="register">EAX</input_0>
+				</pcode_3>
+			</instruction_0>
+			<instruction_1>
+				<pcode_0>
+					<output size="1" storage="register">CF</output>
+					<name>INT_CARRY</name>
+					<input_0 size="4" storage="register">EAX</input_0>
+					<input_1 size="4" storage="constant">0x2</input_1>
+				</pcode_0>
+				<pcode_1>
+					<output size="1" storage="register">OF</output>
+					<name>INT_SCARRY</name>
+					<input_0 size="4" storage="register">EAX</input_0>
+					<input_1 size="4" storage="constant">0x2</input_1>
+				</pcode_1>
+				<pcode_2>
+					<output size="4" storage="register">EAX</output>
+					<name>INT_ADD</name>
+					<input_0 size="4" storage="register">EAX</input_0>
+					<input_1 size="4" storage="constant">0x2</input_1>
+				</pcode_2>
+				<pcode_3>
+					<output size="8" storage="register">RAX</output>
+					<name>INT_ZEXT</name>
+					<input_0 size="4" storage="register">EAX</input_0>
+				</pcode_3>
+				<pcode_4>
+					<output size="1" storage="register">SF</output>
+					<name>INT_SLESS</name>
+					<input_0 size="4" storage="register">EAX</input_0>
+					<input_1 size="4" storage="constant">0x0</input_1>
+				</pcode_4>
+				<pcode_5>
+					<output size="1" storage="register">ZF</output>
+					<name>INT_EQUAL</name>
+					<input_0 size="4" storage="register">EAX</input_0>
+					<input_1 size="4" storage="constant">0x0</input_1>
+				</pcode_5>
+			</instruction_1>
+			<instruction_2>
+				<pcode_0>
+					<output size="8" storage="register">RIP</output>
+					<name>LOAD</name>
+					<input_0 size="8" storage="constant">0x1b1</input_0>
+					<input_1 size="8" storage="register">RSP</input_1>
+				</pcode_0>
+				<pcode_1>
+					<output size="8" storage="register">RSP</output>
+					<name>INT_ADD</name>
+					<input_0 size="8" storage="register">RSP</input_0>
+					<input_1 size="8" storage="constant">0x8</input_1>
+				</pcode_1>
+				<pcode_2>
+					<name>RETURN</name>
+					<input_0 size="8" storage="register">RIP</input_0>
+				</pcode_2>
+			</instruction_2>
+		</instructions>
+	</function>
+</program>
