@@ -1,7 +1,5 @@
 from llvmlite import ir
 import xml.etree.ElementTree as ET
-import fileinput
-import sys
 
 int32 = ir.IntType(32)
 int64 = ir.IntType(64)
@@ -11,139 +9,119 @@ registers, functions, uniques, extracts = {}, {}, {}, {}
 memory = {}
 loaded = {}
 flags = ["ZF", "CF", "OF", "SF"]
+pointers = ["RSP", "RIP", "RBP", "EBP"]
 
 
 def main():
-    with open(sys.argv[1], 'r') as xml_file:
-        root = ET.parse(xml_file).getroot()
-        module = ir.Module(name="lifted")
+    root = ET.parse('/tmp/output.xml').getroot()
+    module = ir.Module(name="lifted")
 
-        for register in root.find('globals').findall('register'):
-            if register.get('name') in flags:
-                var = ir.GlobalVariable(module, ir.IntType(1), register.get('name'))
-                var.initializer = ir.Constant(ir.IntType(1), None)
-                var.linkage = 'internal'
-                registers[register.get('name')] = var
-            elif register.get('name') == "RSP" or register.get('name') == "RIP":
-                var = ir.GlobalVariable(module, ir.PointerType(ir.IntType(8)), register.get('name'))
-                var.initializer = ir.Constant(ir.PointerType(ir.IntType(8)), None)
-                var.linkage = 'internal'
-                registers[register.get('name')] = var
-            else:
-                var = ir.GlobalVariable(module, ir.IntType(8 * int(register.get('size'))), register.get('name'))
-                var.initializer = ir.Constant(ir.IntType(8 * int(register.get('size'))), None)
-                var.linkage = 'internal'
-                registers[register.get('name')] = var
-        # for memory_location in root.find('memory').findall('memory'):
-        #     var = ir.GlobalVariable(module, ir.IntType(8 * int(memory_location.get('size'))), memory_location.get('name'))
-        #     var.initializer = ir.Constant(ir.IntType(8 * int(memory_location.get('size'))), None)
-        #     var.linkage = 'internal'
-        #     memory[memory_location.get('name')] = var
-        for function in root.findall('function'):
-            name = function.get('name')
-            functions[name] = get_function(function, name, module)
-        print(module)
+    for register in root.find('globals').findall('register'):
+        if register.get('name') in flags:
+            var = ir.GlobalVariable(module, ir.IntType(1), register.get('name'))
+            var.initializer = ir.Constant(ir.IntType(1), None)
+            var.linkage = 'internal'
+            registers[register.get('name')] = var
+        elif register.get('name') in pointers:
+            var = ir.GlobalVariable(module, ir.PointerType(ir.IntType(8)), register.get('name'))
+            var.initializer = ir.Constant(ir.PointerType(ir.IntType(8)), None)
+            var.linkage = 'internal'
+            registers[register.get('name')] = var
+        else:
+            var = ir.GlobalVariable(module, ir.IntType(8 * int(register.get('size'))), register.get('name'))
+            var.initializer = ir.Constant(ir.IntType(8 * int(register.get('size'))), None)
+            var.linkage = 'internal'
+            registers[register.get('name')] = var
+
+    for memory_location in root.find('memory').findall('memory'):
+        var = ir.GlobalVariable(module, ir.IntType(8 * int(memory_location.get('size'))), memory_location.get('name'))
+        var.initializer = ir.Constant(ir.IntType(8 * int(memory_location.get('size'))), None)
+        var.linkage = 'internal'
+        memory[memory_location.get('name')] = var
+
+    for function in root.findall('function'):
+        name = function.get('name')
+        if name in ["main"]:
+            address = function.get('address')
+            functions[address] = [build_function(name, module), function]
+
+    for address in functions:
+        ir_func, function = functions[address]
+        populate_func(module, ir_func, function)
+
+    print(module)
     return 0
 
 
-def get_function(function, name, module):
+def populate_func(module, ir_func, function):
+    builders, blocks, ends = build_cfg(function, ir_func)
+    populate_cfg(function, builders, blocks, ends)
+
+
+def build_function(name, module):
     func_return = ir.VoidType()
     fnty = ir.FunctionType(func_return, [])
     ir_func = ir.Function(module, fnty, name)
-    builders, blocks = build_cfg(function, ir_func)
-    populate_cfg(module, function, builders, blocks)
     return ir_func
 
 
 def build_cfg(function, ir_func):
     builders, blocks = {}, {}
+    ends = []
     block = ir_func.append_basic_block("entry")
     blocks["entry"] = block
     builders["entry"] = ir.IRBuilder(block)
-    block = ir_func.append_basic_block("block")
-    blocks["block"] = block
-    builders["block"] = ir.IRBuilder(block)
-    return builders, blocks
+    for instruction in function.find("instructions"):
+        address = instruction.find("address").text
+        block = ir_func.append_basic_block(address)
+        blocks[address] = block
+        builders[address] = ir.IRBuilder(block)
+    # for block in function.find("basic_blocks"):
+    #     address = block.get("start")
+    #     ends.append(block.get("end"))
+    #     block = ir_func.append_basic_block(address)
+    #     blocks[address] = block
+    #     builders[address] = ir.IRBuilder(block)
+    return builders, blocks, ends
 
 
-def fetch_value(builder, name, flag_op):
-    var_type = name.get("storage")
-    var_size = int(name.get("size"))*8
-    if var_type == "register":
-        if name.text in loaded:
-            return loaded[name.text]
-        else:
-            register = registers[name.text]
-            loaded[name.text] = builder.load(register)
-            return loaded[name.text]
-    elif var_type == "constant":
-        if flag_op:
-            var_size = 1
-        var = ir.Constant(ir.IntType(var_size), int(name.text, 0))
-        return var
-    elif var_type == "unique":
-        return uniques[name.text]
-    elif var_type == "memory":
-        memory_loc = memory[name.text]
-        return builder.load(memory_loc)
-
-
-def get_extract_func(module, smallwidth, bigwidth):
-    smallwidth = int(smallwidth) * 8
-    bigwidth = int(bigwidth) * 8
-    t = (smallwidth, bigwidth)
-    if t not in extracts.keys():
-        typ = ir.FunctionType(ir.IntType(smallwidth), [ir.IntType(32), ir.IntType(bigwidth)])
-        func = ir.Function(module, typ, "ghidra.subpiece.i%.i%d" % (bigwidth, smallwidth))
-        func.attributes.add("readnone")
-        func.attributes.add("norecurse")
-        func.attributes.add("nounwind")
-        extracts[t] = func
-    return extracts[t]
-
-
-def fetch_output(builder, name, output):
-    var_type = name.get("storage")
-    var_size = int(name.get("size"))*8
-    if var_type == "register":
-        register = registers[name.text]
-        builder.store(output, register)
-        loaded[name.text] = output
-    if var_type == "unique":
-        uniques[name.text] = output
-    if var_type == "memory":
-        memory_loc = memory[name.text]
-        builder.store(output, memory_loc)
-
-
-def getsize(pcode, input_name):
-    return int(pcode.find(input_name).get("size")) * 8
-
-
-def populate_cfg(module, function, builders, blocks):
+def populate_cfg(function, builders, blocks, ends):
+    builder = builders["entry"]
     if function.get("name") == "main":
-        builder = builders["entry"]
         stack_size = 10 * 1024 * 1024
         stack = builder.alloca(ir.IntType(8), stack_size, name="stack")
         stack_top = builder.gep(stack, [ir.Constant(int64, stack_size - 8)], name="stack_top")
         builder.store(stack_top, registers["RSP"])
-        builder.branch(blocks["block"])
-    builder = builders["block"]
+    builder.branch(list(blocks.values())[1])
+    block_iterator = 1
     for instruction in function.find("instructions"):
-        for pcode in instruction:
+        address = instruction.find("address").text
+        if address in builders:
+            builder = builders[address]
+        pcodes = instruction.find("pcodes")
+        for pcode in pcodes:
             mnemonic = pcode.find("name")
             flag_op = False
             for child in pcode:
                 if child.text in flags:
                     flag_op = True
             if mnemonic.text == "COPY":
-                pass
+                output = fetch_value(builder, pcode.find("input_0"), flag_op)
+                fetch_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "LOAD":
                 rsp = builder.load(registers["RSP"])
                 rsp2 = builder.gep(rsp, [ir.Constant(int64, int(pcode.find("input_0").text, 0))])
                 builder.store(rsp2, registers["RIP"])
             elif mnemonic.text == "STORE":
-                pass
+                if pcode.find("input_0").text in pointers:
+                    rsp = builder.load(registers["RSP"])
+                    rsp2 = builder.gep(rsp, [ir.Constant(int64, int(pcode.find("input_1").text, 0))])
+                    builder.store(rsp2, registers["RSP"])
+                else:
+                    lhs = fetch_value(builder, pcode.find("input_0"), flag_op)
+                    rhs = fetch_value(builder, pcode.find("input_1"), flag_op)
+                    output = builder.add(lhs, rhs)
+                    fetch_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "BRANCH":
                 pass
             elif mnemonic.text == "CBRANCH":
@@ -189,9 +167,9 @@ def populate_cfg(module, function, builders, blocks):
             elif mnemonic.text == "INT_SEXT":
                 pass
             elif mnemonic.text == "INT_ADD":
-                if pcode.find("input_0").text == "RSP":
+                if pcode.find("input_0").text in pointers:
                     rsp = builder.load(registers["RSP"])
-                    rsp2 = builder.gep(rsp, [ir.Constant(int64, 8)])
+                    rsp2 = builder.gep(rsp, [ir.Constant(int64, int(pcode.find("input_1").text, 0))])
                     builder.store(rsp2, registers["RSP"])
                 else:
                     lhs = fetch_value(builder, pcode.find("input_0"), flag_op)
@@ -199,7 +177,15 @@ def populate_cfg(module, function, builders, blocks):
                     output = builder.add(lhs, rhs)
                     fetch_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_SUB":
-                pass
+                if pcode.find("input_0").text in pointers:
+                    rsp = builder.load(registers["RSP"])
+                    rsp2 = builder.gep(rsp, [ir.Constant(int64, -int(pcode.find("input_1").text, 0))])
+                    builder.store(rsp2, registers["RSP"])
+                else:
+                    lhs = fetch_value(builder, pcode.find("input_0"), flag_op)
+                    rhs = fetch_value(builder, pcode.find("input_1"), flag_op)
+                    output = builder.sub(lhs, rhs)
+                    fetch_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_CARRY":
                 flag_op = False
                 lhs = fetch_value(builder, pcode.find("input_0"), flag_op)
@@ -223,7 +209,10 @@ def populate_cfg(module, function, builders, blocks):
             elif mnemonic.text == "INT_XOR":
                 pass
             elif mnemonic.text == "INT_AND":
-                pass
+                lhs = fetch_value(builder, pcode.find("input_0"), flag_op)
+                rhs = fetch_value(builder, pcode.find("input_1"), flag_op)
+                output = builder.and_(lhs, rhs)
+                fetch_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_OR":
                 pass
             elif mnemonic.text == "INT_LEFT":
@@ -305,6 +294,71 @@ def populate_cfg(module, function, builders, blocks):
                 pass
             else:
                 raise Exception("Not a standard pcode instruction")
+        block_iterator+=1
+        if block_iterator < len(blocks):
+            builder.branch(list(blocks.values())[block_iterator])
+
+
+def fetch_value(builder, name, flag_op):
+    var_type = name.get("storage")
+    var_size = int(name.get("size"))*8
+    if var_type == "register":
+        if name.text in pointers:
+            register = builder.ptrtoint(registers[name.text], ir.IntType(var_size))
+            return register
+        elif name.text in loaded:
+            return loaded[name.text]
+        else:
+            register = registers[name.text]
+            loaded[name.text] = builder.load(register)
+            return loaded[name.text]
+    elif var_type == "constant":
+        if flag_op:
+            var_size = 1
+        var = ir.Constant(ir.IntType(var_size), int(name.text, 0))
+        return var
+    elif var_type == "unique":
+        return uniques[name.text]
+    elif var_type == "memory":
+        memory_loc = memory[name.text]
+        return builder.load(memory_loc)
+
+
+def get_extract_func(module, smallwidth, bigwidth):
+    smallwidth = int(smallwidth) * 8
+    bigwidth = int(bigwidth) * 8
+    t = (smallwidth, bigwidth)
+    if t not in extracts.keys():
+        typ = ir.FunctionType(ir.IntType(smallwidth), [ir.IntType(32), ir.IntType(bigwidth)])
+        func = ir.Function(module, typ, "ghidra.subpiece.i%.i%d" % (bigwidth, smallwidth))
+        func.attributes.add("readnone")
+        func.attributes.add("norecurse")
+        func.attributes.add("nounwind")
+        extracts[t] = func
+    return extracts[t]
+
+
+def fetch_output(builder, name, output):
+    var_type = name.get("storage")
+    var_size = int(name.get("size"))*8
+    if var_type == "register":
+        if name.text in pointers:
+            register = registers[name.text]
+            conv = builder.inttoptr(output, ir.PointerType(ir.IntType(var_size//8)))
+            builder.store(conv, registers[name.text])
+        else:
+            register = registers[name.text]
+            builder.store(output, register)
+            loaded[name.text] = output
+    if var_type == "unique":
+        uniques[name.text] = output
+    if var_type == "memory":
+        memory_loc = memory[name.text]
+        builder.store(output, memory_loc)
+
+
+def getsize(pcode, input_name):
+    return int(pcode.find(input_name).get("size")) * 8
 
 
 if __name__ == "__main__":
