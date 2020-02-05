@@ -1,0 +1,464 @@
+; ModuleID = "lifted"
+target triple = "unknown-unknown-unknown"
+target datalayout = ""
+
+@"RBP" = internal global i8* null
+@"RSP" = internal global i8* null
+@"RDI" = internal global i64 0
+@"RIP" = internal global i8* null
+@"ESI" = internal global i32 0
+@"RAX" = internal global i64 0
+@"EDX" = internal global i32 0
+@"RDX" = internal global i64 0
+@"CF" = internal global i1 0
+@"OF" = internal global i1 0
+@"SF" = internal global i1 0
+@"ZF" = internal global i1 0
+@"FS_OFFSET" = internal global i64 0
+@"EAX" = internal global i32 0
+@"RSI" = internal global i64 0
+@"AL" = internal global i8 0
+@"A_00101008:8" = internal global i64 0
+@"A_00100000:8" = internal global i64 0
+@"A_00100039:8" = internal global i64 0
+@"A_00100098:8" = internal global i64 0
+@"A_00100013:8" = internal global i64 0
+@"A_0010009d:8" = internal global i64 0
+@"A_00100026:8" = internal global i64 0
+@"A_001000b6:8" = internal global i64 0
+@"A_00101010:8" = internal global i64 0
+define void @"path_start_0_1_2_3_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26_27_28_29_30_31_32_33_34_35_36_37_38_39_40_41_42_43_44_45_46_47_48_49_50_51_52_53_54_55_56_57_58_59_60_61_62_63_64_65_66"() 
+{
+entry:
+  %"stack" = alloca i8, i32 10485760
+  %"stack_top" = getelementptr i8, i8* %"stack", i64 10485752
+  store i8* %"stack_top", i8** @"RSP"
+  br label %"00100000"
+"00100000":
+  %".4" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".4", i8** @"RSP"
+  %".6" = getelementptr i8*, i8** @"RSP", i64 0
+  store i8* %".4", i8** %".6"
+  br label %"00100001"
+"00100001":
+  %".9" = bitcast i8* %".5" to i8**
+  %".10" = bitcast i8** @"RBP" to i8***
+  store i8** %".9", i8*** %".10"
+  br label %"00100004"
+"00100004":
+  %".13" = bitcast i64 1048760 to i64*
+  %".14" = bitcast i64* @"RDI" to i64**
+  store i64* %".13", i64** %".14"
+  br label %"0010000b"
+"0010000b":
+  %".17" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".17", i8** @"RSP"
+  %".19" = getelementptr i8*, i8** @"RSP", i64 0
+  %".20" = bitcast i8** %".19" to i64*
+  store i64 1048592, i64* %".20"
+  call void @"time_0_1_2_3_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26_27_28_29_30_31_32_33_34_35_36_37_38_39_40_41_42_43_44_45_46_47_48_49_50_51_52_53_54_55_56_57_58_59_60_61_62_63_64_65_66"()
+  br label %"00100010"
+"00100010":
+  br label %"00100011"
+"00100011":
+  %".25" = getelementptr i8, i8* %".5", i64 0
+  %".26" = load i8, i8* %".25"
+  %".27" = bitcast i8** @"RBP" to i8*
+  store i8 %".26", i8* %".27"
+  %".29" = getelementptr i8, i8* %".5", i64 8
+  store i8* %".29", i8** @"RSP"
+  br label %"00100012"
+"00100012":
+  %".32" = getelementptr i8, i8* %".5", i64 0
+  %".33" = load i8, i8* %".32"
+  %".34" = bitcast i8** @"RIP" to i8*
+  store i8 %".33", i8* %".34"
+  %".36" = getelementptr i8, i8* %".5", i64 8
+  store i8* %".36", i8** @"RSP"
+  ret void
+}
+
+define void @"path_goal_0_1_2_3_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26_27_28_29_30_31_32_33_34_35_36_37_38_39_40_41_42_43_44_45_46_47_48_49_50_51_52_53_54_55_56_57_58_59_60_61_62_63_64_65_66"() 
+{
+entry:
+  %"stack" = alloca i8, i32 10485760
+  %"stack_top" = getelementptr i8, i8* %"stack", i64 10485752
+  store i8* %"stack_top", i8** @"RSP"
+  br label %"00100013"
+"00100013":
+  %".4" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".4", i8** @"RSP"
+  %".6" = getelementptr i8*, i8** @"RSP", i64 0
+  store i8* %".4", i8** %".6"
+  br label %"00100014"
+"00100014":
+  %".9" = bitcast i8* %".5" to i8**
+  %".10" = bitcast i8** @"RBP" to i8***
+  store i8** %".9", i8*** %".10"
+  br label %"00100017"
+"00100017":
+  %".13" = bitcast i64 1048760 to i64*
+  %".14" = bitcast i64* @"RDI" to i64**
+  store i64* %".13", i64** %".14"
+  br label %"0010001e"
+"0010001e":
+  %".17" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".17", i8** @"RSP"
+  %".19" = getelementptr i8*, i8** @"RSP", i64 0
+  %".20" = bitcast i8** %".19" to i64*
+  store i64 1048611, i64* %".20"
+  call void @"time_0_1_2_3_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26_27_28_29_30_31_32_33_34_35_36_37_38_39_40_41_42_43_44_45_46_47_48_49_50_51_52_53_54_55_56_57_58_59_60_61_62_63_64_65_66"()
+  br label %"00100023"
+"00100023":
+  br label %"00100024"
+"00100024":
+  %".25" = getelementptr i8, i8* %".5", i64 0
+  %".26" = load i8, i8* %".25"
+  %".27" = bitcast i8** @"RBP" to i8*
+  store i8 %".26", i8* %".27"
+  %".29" = getelementptr i8, i8* %".5", i64 8
+  store i8* %".29", i8** @"RSP"
+  br label %"00100025"
+"00100025":
+  %".32" = getelementptr i8, i8* %".5", i64 0
+  %".33" = load i8, i8* %".32"
+  %".34" = bitcast i8** @"RIP" to i8*
+  store i8 %".33", i8* %".34"
+  %".36" = getelementptr i8, i8* %".5", i64 8
+  store i8* %".36", i8** @"RSP"
+  ret void
+}
+
+define void @"path_nongoal_0_1_2_3_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26_27_28_29_30_31_32_33_34_35_36_37_38_39_40_41_42_43_44_45_46_47_48_49_50_51_52_53_54_55_56_57_58_59_60_61_62_63_64_65_66"() 
+{
+entry:
+  %"stack" = alloca i8, i32 10485760
+  %"stack_top" = getelementptr i8, i8* %"stack", i64 10485752
+  store i8* %"stack_top", i8** @"RSP"
+  br label %"00100026"
+"00100026":
+  %".4" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".4", i8** @"RSP"
+  %".6" = getelementptr i8*, i8** @"RSP", i64 0
+  store i8* %".4", i8** %".6"
+  br label %"00100027"
+"00100027":
+  %".9" = bitcast i8* %".5" to i8**
+  %".10" = bitcast i8** @"RBP" to i8***
+  store i8** %".9", i8*** %".10"
+  br label %"0010002a"
+"0010002a":
+  %".13" = bitcast i64 1048760 to i64*
+  %".14" = bitcast i64* @"RDI" to i64**
+  store i64* %".13", i64** %".14"
+  br label %"00100031"
+"00100031":
+  %".17" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".17", i8** @"RSP"
+  %".19" = getelementptr i8*, i8** @"RSP", i64 0
+  %".20" = bitcast i8** %".19" to i64*
+  store i64 1048630, i64* %".20"
+  call void @"time_0_1_2_3_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26_27_28_29_30_31_32_33_34_35_36_37_38_39_40_41_42_43_44_45_46_47_48_49_50_51_52_53_54_55_56_57_58_59_60_61_62_63_64_65_66"()
+  br label %"00100036"
+"00100036":
+  br label %"00100037"
+"00100037":
+  %".25" = getelementptr i8, i8* %".5", i64 0
+  %".26" = load i8, i8* %".25"
+  %".27" = bitcast i8** @"RBP" to i8*
+  store i8 %".26", i8* %".27"
+  %".29" = getelementptr i8, i8* %".5", i64 8
+  store i8* %".29", i8** @"RSP"
+  br label %"00100038"
+"00100038":
+  %".32" = getelementptr i8, i8* %".5", i64 0
+  %".33" = load i8, i8* %".32"
+  %".34" = bitcast i8** @"RIP" to i8*
+  store i8 %".33", i8* %".34"
+  %".36" = getelementptr i8, i8* %".5", i64 8
+  store i8* %".36", i8** @"RSP"
+  ret void
+}
+
+define void @"writeThroughPointer_0"() 
+{
+entry:
+  %"stack" = alloca i8, i32 10485760
+  %"stack_top" = getelementptr i8, i8* %"stack", i64 10485752
+  store i8* %"stack_top", i8** @"RSP"
+  br label %"00100039"
+"00100039":
+  %".4" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".4", i8** @"RSP"
+  %".6" = getelementptr i8*, i8** @"RSP", i64 0
+  store i8* %".4", i8** %".6"
+  br label %"0010003a"
+"0010003a":
+  %".9" = bitcast i8* %".5" to i8**
+  %".10" = bitcast i8** @"RBP" to i8***
+  store i8** %".9", i8*** %".10"
+  br label %"0010003d"
+"0010003d":
+  %".13" = getelementptr i8, i8* %".4", i64 18446744073709551608
+  %".14" = getelementptr i8, i8* %".13", i64 0
+  %".15" = bitcast i8* %".14" to i64*
+  store i64 %".14", i64* %".15"
+  br label %"00100041"
+"00100041":
+  %".18" = getelementptr i8, i8* %".4", i64 18446744073709551604
+  %".19" = getelementptr i8, i8* %".18", i64 0
+  %".20" = bitcast i8* %".19" to i32*
+  store i32 %".20", i32* %".20"
+  br label %"00100044"
+"00100044":
+  %".23" = getelementptr i8, i8* %".4", i64 18446744073709551608
+  %".24" = bitcast i8* %".23" to i64*
+  %".25" = bitcast i64* @"RAX" to i64**
+  store i64* %".24", i64** %".25"
+  br label %"00100048"
+"00100048":
+  %".28" = getelementptr i8, i8* %".4", i64 18446744073709551604
+  %".29" = bitcast i8* %".28" to i32*
+  %".30" = bitcast i32* @"EDX" to i32**
+  store i32* %".29", i32** %".30"
+  %".32" = zext i32 %".61" to i64
+  store i64 %".32", i64* @"RDX"
+  br label %"0010004b"
+"0010004b":
+  %".35" = getelementptr i64, i64* @"RAX", i64 0
+  %".36" = bitcast i64* %".35" to i32*
+  store i32 %".61", i32* %".36"
+  br label %"0010004d"
+"0010004d":
+  br label %"0010004e"
+"0010004e":
+  %".40" = getelementptr i8, i8* %".5", i64 0
+  %".41" = load i8, i8* %".40"
+  %".42" = bitcast i8** @"RBP" to i8*
+  store i8 %".41", i8* %".42"
+  %".44" = getelementptr i8, i8* %".5", i64 8
+  store i8* %".44", i8** @"RSP"
+  br label %"0010004f"
+"0010004f":
+  %".47" = getelementptr i8, i8* %".5", i64 0
+  %".48" = load i8, i8* %".47"
+  %".49" = bitcast i8** @"RIP" to i8*
+  store i8 %".48", i8* %".49"
+  %".51" = getelementptr i8, i8* %".5", i64 8
+  store i8* %".51", i8** @"RSP"
+  ret void
+}
+
+define void @"main_0_1_2_3_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26_27_28_29_30_31_32_33_34_35_36_37_38_39_40_41_42_43_44_45_46_47_48_49_50_51_52_53_54_55_56_57_58_59_60_61_62_63_64_65_66"() 
+{
+entry:
+  %"stack" = alloca i8, i32 10485760
+  %"stack_top" = getelementptr i8, i8* %"stack", i64 10485752
+  store i8* %"stack_top", i8** @"RSP"
+  br label %"00100050"
+"00100050":
+  %".4" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".4", i8** @"RSP"
+  %".6" = getelementptr i8*, i8** @"RSP", i64 0
+  store i8* %".4", i8** %".6"
+  br label %"00100051"
+"00100051":
+  %".9" = bitcast i8* %".5" to i8**
+  %".10" = bitcast i8** @"RBP" to i8***
+  store i8** %".9", i8*** %".10"
+  br label %"00100054"
+"00100054":
+  %".13" = bitcast i8* %".5" to i64
+  %".14" = icmp ult i64 %".13", 16
+  store i1 %".14", i1* @"CF"
+  %".16" = bitcast i8* %".5" to i64
+  %".17" = getelementptr i8, i8* %".5", i64 -16
+  store i8* %".17", i8** @"RSP"
+  %".19" = bitcast i8* %".5" to i64
+  %".20" = icmp slt i64 %".19", 0
+  store i1 %".20", i1* @"SF"
+  %".22" = bitcast i8* %".5" to i64
+  %".23" = icmp eq i64 %".22", 0
+  store i1 %".23", i1* @"ZF"
+  br label %"00100058"
+"00100058":
+  %".26" = add i64 %".26", 40
+  %".27" = bitcast i64 %".26" to i64*
+  %".28" = bitcast i64* @"RAX" to i64**
+  store i64* %".27", i64** %".28"
+  br label %"00100061"
+"00100061":
+  %".31" = getelementptr i8, i8* %".4", i64 18446744073709551608
+  %".32" = getelementptr i8, i8* %".31", i64 0
+  %".33" = bitcast i8* %".32" to i64*
+  store i64 %".131", i64* %".33"
+  br label %"00100065"
+"00100065":
+  %".36" = bitcast i8 0 to i1*
+  %".37" = bitcast i1* @"CF" to i1**
+  store i1* %".36", i1** %".37"
+  %".39" = bitcast i8 0 to i1*
+  %".40" = bitcast i1* @"OF" to i1**
+  store i1* %".39", i1** %".40"
+  %".42" = xor i32 %".52", %".52"
+  store i32 %".42", i32* @"EAX"
+  %".44" = zext i32 %".52" to i64
+  store i64 %".44", i64* @"RAX"
+  %".46" = icmp slt i32 %".52", 0
+  store i1 %".46", i1* @"SF"
+  %".48" = icmp eq i32 %".52", 0
+  store i1 %".48", i1* @"ZF"
+  br label %"00100067"
+"00100067":
+  %".51" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".51", i8** @"RSP"
+  %".53" = getelementptr i8*, i8** @"RSP", i64 0
+  %".54" = bitcast i8** %".53" to i64*
+  store i64 1048684, i64* %".54"
+  call void @"path_start_0_1_2_3_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26_27_28_29_30_31_32_33_34_35_36_37_38_39_40_41_42_43_44_45_46_47_48_49_50_51_52_53_54_55_56_57_58_59_60_61_62_63_64_65_66"()
+  br label %"0010006c"
+"0010006c":
+  %".58" = getelementptr i8, i8* %".4", i64 18446744073709551604
+  %".59" = getelementptr i8, i8* %".58", i64 0
+  %".60" = bitcast i8* %".59" to i32*
+  store i32 1, i32* %".60"
+  br label %"00100073"
+"00100073":
+  %".63" = getelementptr i8, i8* %".4", i64 18446744073709551604
+  %".64" = bitcast i8* %".63" to i64*
+  %".65" = bitcast i64* @"RAX" to i64**
+  store i64* %".64", i64** %".65"
+  br label %"00100077"
+"00100077":
+  %".68" = bitcast i64 42 to i64*
+  %".69" = bitcast i64* @"RSI" to i64**
+  store i64* %".68", i64** %".69"
+  br label %"0010007c"
+"0010007c":
+  %".72" = bitcast i64 %".131" to i64*
+  %".73" = bitcast i64* @"RDI" to i64**
+  store i64* %".72", i64** %".73"
+  br label %"0010007f"
+"0010007f":
+  %".76" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".76", i8** @"RSP"
+  %".78" = getelementptr i8*, i8** @"RSP", i64 0
+  %".79" = bitcast i8** %".78" to i64*
+  store i64 1048708, i64* %".79"
+  call void @"writeThroughPointer_0"()
+  br label %"00100084"
+"00100084":
+  %".83" = getelementptr i8, i8* %".4", i64 18446744073709551604
+  %".84" = bitcast i8* %".83" to i32*
+  %".85" = bitcast i32* @"EAX" to i32**
+  store i32* %".84", i32** %".85"
+  %".87" = zext i32 %".52" to i64
+  store i64 %".87", i64* @"RAX"
+  br label %"00100087"
+"00100087":
+  %".90" = icmp ult i32 %".52", 42
+  store i1 %".90", i1* @"CF"
+  %".92" = sub i32 %".52", 42
+  %".93" = icmp slt i32 %".92", 0
+  store i1 %".93", i1* @"SF"
+  %".95" = icmp eq i32 %".92", 0
+  store i1 %".95", i1* @"ZF"
+  br label %"0010008a"
+"0010008a":
+  %".98" = bitcast i1 %".74" to i8*
+  %".99" = bitcast i8* @"AL" to i8**
+  store i8* %".98", i8** %".99"
+  br label %"0010008d"
+"0010008d":
+  %".102" = bitcast i8 0 to i1*
+  %".103" = bitcast i1* @"CF" to i1**
+  store i1* %".102", i1** %".103"
+  %".105" = bitcast i8 0 to i1*
+  %".106" = bitcast i1* @"OF" to i1**
+  store i1* %".105", i1** %".106"
+  %".108" = and i8 %".186", %".186"
+  %".109" = icmp slt i8 %".108", 0
+  store i1 %".109", i1* @"SF"
+  %".111" = icmp eq i8 %".108", 0
+  store i1 %".111", i1* @"ZF"
+  br label %"0010008f"
+"0010008f":
+  br i1 %".74", label %"00100098", label %"00100091"
+"00100091":
+  %".115" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".115", i8** @"RSP"
+  %".117" = getelementptr i8*, i8** @"RSP", i64 0
+  %".118" = bitcast i8** %".117" to i64*
+  store i64 1048726, i64* %".118"
+  call void @"path_goal_0_1_2_3_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26_27_28_29_30_31_32_33_34_35_36_37_38_39_40_41_42_43_44_45_46_47_48_49_50_51_52_53_54_55_56_57_58_59_60_61_62_63_64_65_66"()
+  br label %"00100096"
+"00100096":
+  br label %"0010009d"
+"00100098":
+  %".123" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".123", i8** @"RSP"
+  %".125" = getelementptr i8*, i8** @"RSP", i64 0
+  %".126" = bitcast i8** %".125" to i64*
+  store i64 1048733, i64* %".126"
+  call void @"path_nongoal_0_1_2_3_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26_27_28_29_30_31_32_33_34_35_36_37_38_39_40_41_42_43_44_45_46_47_48_49_50_51_52_53_54_55_56_57_58_59_60_61_62_63_64_65_66"()
+  br label %"0010009d"
+"0010009d":
+  %".130" = bitcast i64 0 to i64*
+  %".131" = bitcast i64* @"RAX" to i64**
+  store i64* %".130", i64** %".131"
+  br label %"001000a2"
+"001000a2":
+  %".134" = getelementptr i8, i8* %".4", i64 18446744073709551608
+  %".135" = bitcast i8* %".134" to i64*
+  %".136" = bitcast i64* @"RDX" to i64**
+  store i64* %".135", i64** %".136"
+  br label %"001000a6"
+"001000a6":
+  %".139" = add i64 %".26", 40
+  %".140" = bitcast i8 0 to i1*
+  %".141" = bitcast i1* @"CF" to i1**
+  store i1* %".140", i1** %".141"
+  %".143" = bitcast i8 0 to i1*
+  %".144" = bitcast i1* @"OF" to i1**
+  store i1* %".143", i1** %".144"
+  %".146" = xor i64 %".146", %".139"
+  store i64 %".146", i64* @"RDX"
+  %".148" = icmp slt i64 %".146", 0
+  store i1 %".148", i1* @"SF"
+  %".150" = icmp eq i64 %".146", 0
+  store i1 %".150", i1* @"ZF"
+  br label %"001000af"
+"001000af":
+  br i1 %".74", label %"001000b6", label %"001000b1"
+"001000b1":
+  %".154" = getelementptr i8, i8* %".5", i64 -8
+  store i8* %".154", i8** @"RSP"
+  %".156" = getelementptr i8*, i8** @"RSP", i64 0
+  %".157" = bitcast i8** %".156" to i64*
+  store i64 1048758, i64* %".157"
+  call void @"__stack_chk_fail_0_1"()
+  br label %"001000b6"
+"001000b6":
+  %".161" = bitcast i8* %".4" to i8**
+  %".162" = bitcast i8** @"RSP" to i8***
+  store i8** %".161", i8*** %".162"
+  %".164" = getelementptr i8, i8* %".5", i64 0
+  %".165" = load i8, i8* %".164"
+  %".166" = bitcast i8** @"RBP" to i8*
+  store i8 %".165", i8* %".166"
+  %".168" = getelementptr i8, i8* %".5", i64 8
+  store i8* %".168", i8** @"RSP"
+  br label %"001000b7"
+"001000b7":
+  %".171" = getelementptr i8, i8* %".5", i64 0
+  %".172" = load i8, i8* %".171"
+  %".173" = bitcast i8** @"RIP" to i8*
+  store i8 %".172", i8* %".173"
+  %".175" = getelementptr i8, i8* %".5", i64 8
+  store i8* %".175", i8** @"RSP"
+  ret void
+}
+
+declare void @"time_0_1_2_3_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26_27_28_29_30_31_32_33_34_35_36_37_38_39_40_41_42_43_44_45_46_47_48_49_50_51_52_53_54_55_56_57_58_59_60_61_62_63_64_65_66"() 
+
+declare void @"__stack_chk_fail_0_1"() 
