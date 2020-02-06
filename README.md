@@ -37,3 +37,8 @@ Optional arguments:
 
 - HighFunction_Analysis.java: Prints readable version of high function representation
 - HighFunction2LLVM.java: Makes an XML file if the high function representation
+
+###### TODO
+
+- Implement lifting using Ghidra's HighFunction (will eventually be the default)
+
