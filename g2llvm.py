@@ -3,7 +3,6 @@
 import importlib
 import argparse
 import subprocess
-import pydot
 
 xmltollvm = importlib.import_module('src.xmltollvm')
 opt_verify = importlib.import_module('src.lifting-opt-verify')
