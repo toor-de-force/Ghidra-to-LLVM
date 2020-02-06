@@ -1,7 +1,7 @@
 # Ghidra-to-LLVM
 This tool lifts a a compiled binary to LLVM.
 
-## Special thanks to the my advisor Arie Gurfinkel and the CMU Pharos team (https://github.com/cmu-sei/pharos). Tests taken from their repository.
+###### Special thanks to the my advisor Arie Gurfinkel and the CMU Pharos team (https://github.com/cmu-sei/pharos). Tests taken from their repository.
 
 ## Required packages for Python 3
 - llvmlite
