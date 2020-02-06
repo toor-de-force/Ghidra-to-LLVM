@@ -1,7 +1,21 @@
 # Ghidra-to-LLVM
-**THIS IS A WORK IN PROGRESS, NOT READY**
+This tool lifts a a compiled binary to LLVM.
 
-Current rough path is through the java plugin in Ghidra which produces an XML file of pcode ops, and then through the python file to generate LLVM bitcode via LLVMlite.
+## Required packages for Python 3
+- llvmlite
+- graphviz
+
+## Installation Instructions (Linux Only)
+
+### 1. Install Ghidra
+
+https://ghidra-sre.org/ghidra_9.1.1_PUBLIC_20191218.zip
+
+- Extract the JDK: tar xvf <JDK distribution .tar.gz>
+- Open ~/.bashrc with an editor of your choice. For example:vi ~/.bashrc
+- At the very end of the file, add the JDK bin directory to the PATH variable:export PATH=<path of extracted JDK dir>/bin:$PATH
+- Save file
+- Restart any open terminal windows for changes to take effect
 
 ###### Extra Scripts
 
