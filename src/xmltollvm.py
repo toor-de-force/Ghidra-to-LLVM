@@ -9,13 +9,12 @@ function_names = []
 registers, functions, uniques, extracts = {}, {}, {}, {}
 internal_functions = {}
 memory = {}
-loaded = {}
 flags = ["ZF", "CF", "OF", "SF"]
 pointers = ["RSP", "RIP", "RBP", "EBP", "ESP"]
 
 
-def main():
-    root = et.parse('/tmp/output.xml').getroot()
+def lift(filename):
+    root = et.parse(filename).getroot()
     module = ir.Module(name="lifted")
 
     for register in root.find('globals').findall('register'):
@@ -51,6 +50,11 @@ def main():
     ir_func = ir.Function(module, fnty, "call_indirect")
     internal_functions["call_indirect"] = ir_func
 
+    func_return = ir.VoidType()
+    fnty = ir.FunctionType(func_return, [])
+    ir_func = ir.Function(module, fnty, "bit_extraction")
+    internal_functions["bit_extraction"] = ir_func
+
     for function in root.findall('function'):
         name = function.get('name')
         x = 1
@@ -65,8 +69,7 @@ def main():
         ir_func, function = functions[address]
         populate_func(ir_func, function)
 
-    print(module)
-    return 0
+    return module
 
 
 def populate_func(ir_func, function):
@@ -123,7 +126,7 @@ def populate_cfg(function, builders, blocks):
             mnemonic = pcode.find("name")
             if mnemonic.text == "COPY":
                 output = pcode.find("output")
-                if output.text in flags:
+                if output.text in flags and pcode.find("input_0").get("storage") == "constant":
                     source = ir.Constant(ir.IntType(1), int(pcode.find("input_0").text, 0))
                 else:
                     source = fetch_input_varnode(builder, pcode.find("input_0"))
@@ -150,7 +153,6 @@ def populate_cfg(function, builders, blocks):
                     lhs2 = builder.bitcast(lhs2, rhs.type.as_pointer())
                 builder.store(rhs, lhs2)
             elif mnemonic.text == "BRANCH":
-                no_branch = False
                 value = pcode.find("input_0").text[2:-2]
                 if value in functions:
                     target = functions[value][0]
@@ -158,6 +160,7 @@ def populate_cfg(function, builders, blocks):
                 elif value in blocks:
                     target = blocks[value]
                     builder.branch(target)
+                    no_branch = False
                 else:
                     # weird jump into some label in another function
                     # might be solved with callbr instruction?
@@ -171,6 +174,8 @@ def populate_cfg(function, builders, blocks):
             elif mnemonic.text == "BRANCHIND":
                 no_branch = False
                 target = fetch_input_varnode(builder, pcode.find("input_0"))
+                if not target.type.is_pointer:
+                    target = builder.inttoptr(target, target.type.as_pointer())
                 builder.branch_indirect(target)
             elif mnemonic.text == "CALL":
                 target = functions[pcode.find("input_0").text[2:-2]][0]
@@ -198,7 +203,7 @@ def populate_cfg(function, builders, blocks):
                     result = builder.trunc(val, ir.IntType(int(output.get("size")) * 8))
                     update_output(builder, output, result)
                 else:
-                    raise Exception("Need special function to model this bit extraction")
+                    builder.call(internal_functions['bit_extraction'], [])
             elif mnemonic.text == "INT_EQUAL":
                 lhs = fetch_input_varnode(builder, pcode.find("input_0"))
                 rhs = fetch_input_varnode(builder, pcode.find("input_1"))
@@ -237,10 +242,14 @@ def populate_cfg(function, builders, blocks):
                 update_output(builder, pcode.find("output"), result)
             elif mnemonic.text == "INT_ZEXT":
                 rhs = fetch_input_varnode(builder, pcode.find("input_0"))
+                if rhs.type.is_pointer:
+                    rhs = builder.ptrtoint(rhs, rhs.type.pointee)
                 output = builder.zext(rhs, ir.IntType(int(pcode.find("output").get("size")) * 8))
                 update_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_SEXT":
                 rhs = fetch_input_varnode(builder, pcode.find("input_0"))
+                if rhs.type.is_pointer:
+                    rhs = builder.ptrtoint(rhs, rhs.type.pointee)
                 output = builder.sext(rhs, ir.IntType(int(pcode.find("output").get("size")) * 8))
                 update_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_ADD":
@@ -248,7 +257,7 @@ def populate_cfg(function, builders, blocks):
                 input_1 = pcode.find("input_1")
                 lhs = fetch_input_varnode(builder, input_0)
                 rhs = fetch_input_varnode(builder, input_1)
-                target = fetch_output_varnode(pcode.find("output"))
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
                 if input_0.text in pointers and input_1.get("storage") == "constant":
                     result = builder.gep(lhs, [ir.Constant(int64, int(input_1.text, 16))])
                 else:
@@ -260,7 +269,7 @@ def populate_cfg(function, builders, blocks):
                 input_1 = pcode.find("input_1")
                 lhs = fetch_input_varnode(builder, input_0)
                 rhs = fetch_input_varnode(builder, input_1)
-                target = fetch_output_varnode(pcode.find("output"))
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
                 if input_0.text in pointers and input_1.get("storage") == "constant":
                     result = builder.gep(lhs, [ir.Constant(int64, -int(input_1.text, 16))])
                 else:
@@ -299,74 +308,77 @@ def populate_cfg(function, builders, blocks):
             elif mnemonic.text == "INT_XOR":
                 lhs = fetch_input_varnode(builder, pcode.find("input_0"))
                 rhs = fetch_input_varnode(builder, pcode.find("input_1"))
-                target = fetch_output_varnode(pcode.find("output"))
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
                 lhs, rhs = int_check_inputs(builder, lhs, rhs, target)
                 output = builder.xor(lhs, rhs)
                 update_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_AND":
                 lhs = fetch_input_varnode(builder, pcode.find("input_0"))
                 rhs = fetch_input_varnode(builder, pcode.find("input_1"))
-                target = fetch_output_varnode(pcode.find("output"))
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
                 lhs, rhs = int_check_inputs(builder, lhs, rhs, target)
                 output = builder.and_(lhs, rhs)
                 update_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_OR":
                 lhs = fetch_input_varnode(builder, pcode.find("input_0"))
                 rhs = fetch_input_varnode(builder, pcode.find("input_1"))
-                target = fetch_output_varnode(pcode.find("output"))
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
                 lhs, rhs = int_check_inputs(builder, lhs, rhs, target)
                 output = builder.or_(lhs, rhs)
                 update_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_LEFT":
                 lhs = fetch_input_varnode(builder, pcode.find("input_0"))
                 rhs = fetch_input_varnode(builder, pcode.find("input_1"))
-                lhs, rhs = check_shift_inputs(builder, lhs, rhs)
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
+                lhs, rhs = check_shift_inputs(builder, lhs, rhs, target)
                 output = builder.shl(lhs, rhs)
                 update_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_RIGHT":
                 lhs = fetch_input_varnode(builder, pcode.find("input_0"))
                 rhs = fetch_input_varnode(builder, pcode.find("input_1"))
-                lhs, rhs = check_shift_inputs(builder, lhs, rhs)
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
+                lhs, rhs = check_shift_inputs(builder, lhs, rhs, target)
                 output = builder.lshr(lhs, rhs)
                 update_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_SRIGHT":
                 lhs = fetch_input_varnode(builder, pcode.find("input_0"))
                 rhs = fetch_input_varnode(builder, pcode.find("input_1"))
-                lhs, rhs = check_shift_inputs(builder, lhs, rhs)
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
+                lhs, rhs = check_shift_inputs(builder, lhs, rhs, target)
                 output = builder.ashr(lhs, rhs)
                 update_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_MULT":
                 lhs = fetch_input_varnode(builder, pcode.find("input_0"))
                 rhs = fetch_input_varnode(builder, pcode.find("input_1"))
-                target = fetch_output_varnode(pcode.find("output"))
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
                 lhs, rhs = int_check_inputs(builder, lhs, rhs, target)
                 output = builder.mul(lhs, rhs)
                 update_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_DIV":
                 lhs = fetch_input_varnode(builder, pcode.find("input_0"))
                 rhs = fetch_input_varnode(builder, pcode.find("input_1"))
-                target = fetch_output_varnode(pcode.find("output"))
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
                 lhs, rhs = int_check_inputs(builder, lhs, rhs, target)
                 output = builder.div(lhs, rhs)
                 update_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_REM":
                 lhs = fetch_input_varnode(builder, pcode.find("input_0"))
                 rhs = fetch_input_varnode(builder, pcode.find("input_1"))
-                target = fetch_output_varnode(pcode.find("output"))
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
                 lhs, rhs = int_check_inputs(builder, lhs, rhs, target)
                 output = builder.urem(lhs, rhs)
                 update_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_SDIV":
                 lhs = fetch_input_varnode(builder, pcode.find("input_0"))
                 rhs = fetch_input_varnode(builder, pcode.find("input_1"))
-                target = fetch_output_varnode(pcode.find("output"))
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
                 lhs, rhs = int_check_inputs(builder, lhs, rhs, target)
                 output = builder.sdiv(lhs, rhs)
                 update_output(builder, pcode.find("output"), output)
             elif mnemonic.text == "INT_SREM":
                 lhs = fetch_input_varnode(builder, pcode.find("input_0"))
                 rhs = fetch_input_varnode(builder, pcode.find("input_1"))
-                target = fetch_output_varnode(pcode.find("output"))
+                target = ir.IntType(int(pcode.find("output").get("size")) * 8)
                 lhs, rhs = int_check_inputs(builder, lhs, rhs, target)
                 output = builder.srem(lhs, rhs)
                 update_output(builder, pcode.find("output"), output)
@@ -451,9 +463,7 @@ def fetch_input_varnode(builder, name):
     var_type = name.get("storage")
     var_size = int(name.get("size")) * 8
     if var_type == "register":
-        if name.text not in list(loaded.keys()):
-            loaded[name.text] = builder.load(registers[name.text])
-        return loaded[name.text]
+        return builder.load(registers[name.text])
     elif var_type == "unique":
         if name.text not in list(uniques.keys()):
             raise Exception("Temporary variable referenced before defined")
@@ -462,9 +472,8 @@ def fetch_input_varnode(builder, name):
         var = ir.Constant(ir.IntType(var_size), int(name.text, 0))
         return var
     elif var_type == "memory":
-        if name.text not in list(loaded.keys()):
-            loaded[name.text] = memory[name.text]
-        return loaded[name.text]
+        return memory[name.text]
+
 
 
 def update_output(builder, name, output):
@@ -489,16 +498,30 @@ def fetch_output_varnode(name):
 
 
 def int_check_inputs(builder, lhs, rhs, target):
-    if lhs.type == rhs.type:
-        return lhs, rhs
-    else:
-        lhs = builder.ptrtoint(lhs, rhs.type)
-        return lhs, rhs
+    if lhs.type != target:
+        if lhs.type.is_pointer:
+            lhs2 = lhs
+            lhs = builder.ptrtoint(lhs, target)
+            if lhs2 == rhs:
+                rhs = lhs
+    if rhs.type != target and lhs != rhs:
+        if rhs.type.is_pointer:
+            rhs = builder.ptrtoint(rhs, target)
+    return lhs, rhs
 
 
-def check_shift_inputs(builder, lhs, rhs):
-    if lhs.type != rhs.type:
-        rhs = builder.zext(rhs, lhs.type)
+def check_shift_inputs(builder, lhs, rhs, target):
+    if lhs.type != target:
+        if lhs.type.is_pointer:
+            lhs = builder.ptrtoint(lhs, target)
+        else:
+            lhs = builder.zext(lhs, target)
+    if rhs.type != target:
+        if rhs.type.is_pointer:
+            rhs = builder.ptrtoint(rhs, target)
+        else:
+            rhs = builder.zext(rhs, target)
+
     return lhs, rhs
 
 
@@ -507,7 +530,3 @@ def int_comparison_check_inputs(builder, lhs, rhs):
     if lhs.type.is_pointer:
         lhs = builder.ptrtoint(lhs, rhs.type)
     return lhs, rhs
-
-
-if __name__ == "__main__":
-    main()
