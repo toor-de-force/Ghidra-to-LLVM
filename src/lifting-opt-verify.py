@@ -2,6 +2,9 @@ import llvmlite.binding as llvm
 
 
 def optimize(module, level):
+    llvm.initialize()
+    llvm.initialize_native_target()
+    llvm.initialize_native_asmprinter()
     module_ref = llvm.parse_assembly(str(module))
     if level is None:
         return module_ref
@@ -9,7 +12,6 @@ def optimize(module, level):
     pm = llvm.create_module_pass_manager()
     pmb.opt_level = level
     pmb.populate(pm)
-    module_ref = llvm.parse_assembly(str(module))
     pm.run(module_ref)
     return module_ref
 
